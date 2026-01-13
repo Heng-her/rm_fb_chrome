@@ -1,0 +1,7 @@
+# build it ot app
+python -m PyInstaller `
+--onefile `
+--windowed `
+--icon=app.ico `
+--add-data "templates;templates" `
+app.py

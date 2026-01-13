@@ -1,0 +1,23 @@
+// click for create account 
+function clickCreateNewAccount() {
+  const btn = document.querySelector(
+    'div[role="button"][aria-label="Create new account"]'
+  );
+
+  if (!btn) {
+    console.log('Button not found');
+    return;
+  }
+
+  ['mousedown', 'mouseup', 'click'].forEach(type => {
+    btn.dispatchEvent(
+      new MouseEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+    );
+  });
+
+  console.log('Button clicked via mouse events');
+}
