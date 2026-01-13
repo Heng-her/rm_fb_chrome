@@ -125,12 +125,28 @@ dist
 # TernJS port file
 .tern-port
 
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
+# Stores VSCode versions used for tes
+# Python
+__pycache__/
+*.pyc
 
-# yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
+# Project-specific ignores
+build/
+dist/
+profiles/
+data/*.json
+# Python
+__pycache__/
+*.pyc
+
+# Project-specific ignores
+build/
+dist/
+profiles/
+data/*.jsonting VSCode extensions
+.vscode-test
+/profiles
+# Python virtual environment
+venv/
+.env/
+
