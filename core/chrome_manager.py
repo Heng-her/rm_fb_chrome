@@ -8,10 +8,20 @@ import win32con
 import time
 from core.session_store import add_session, get_session, update_session
 
-CHROME_PATH = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 _basedir = os.path.dirname(os.path.abspath(__file__))
+CHROME_PATH = os.path.abspath(os.path.join(_basedir, "..", "bin", "chrome.exe"))
 PROFILE_BASE_DIR = os.path.abspath(os.path.join(_basedir, "..", "profiles"))
 
+def is_pid_alive(pid):
+    if not pid:
+        return False
+    try:
+        # Check if process is running using Windows tasklist
+        cmd = f'tasklist /FI "PID eq {pid}" /NH'
+        output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT).decode()
+        return str(pid) in output
+    except Exception:
+        return False
 
 def open_chrome(session_id=None, url="https://m.facebook.com"):
     # NEW SESSION

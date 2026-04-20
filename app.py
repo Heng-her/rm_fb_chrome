@@ -2,8 +2,8 @@ from flask import Flask, jsonify, render_template, request
 import threading
 import webview
 
-from core.chrome_manager import open_chrome, close_chrome
-from core.session_store import get_sessions
+from core.chrome_manager import open_chrome, close_chrome, is_pid_alive
+from core.session_store import get_sessions, update_session
 
 app = Flask(
     __name__,
@@ -20,8 +20,11 @@ def open_chrome_route():
     data = request.json or {}
     session_id = data.get("session_id")
 
-    session_id = open_chrome(session_id=session_id)
-    return jsonify({"session_id": session_id})
+    try:
+        session_id = open_chrome(session_id=session_id)
+        return jsonify({"session_id": session_id})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/close_chrome", methods=["POST"])
 def close_chrome_route():
@@ -39,6 +42,14 @@ def close_chrome_route():
 
 @app.route("/status")
 def status():
+    sessions = get_sessions()
+    # Refresh statuses based on PID
+    for sid, data in sessions.items():
+        if data["status"] == "OPEN":
+            if not is_pid_alive(data.get("pid")):
+                update_session(sid, {"status": "CLOSED"})
+    
+    # Reload after updates
     return jsonify(get_sessions())
 
 
