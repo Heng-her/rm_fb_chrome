@@ -22,13 +22,17 @@ def save_sessions(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
-def add_session(session_id, status, url, profile_dir, pid):
+def add_session(session_id, status, url, profile_dir, pid, ip="Unknown", timezone="Unknown", proxy=None, vpn_server=None):
     data = load_sessions()
     data[session_id] = {
         "status": status,
         "url": url,
         "profile_dir": profile_dir,
-        "pid": pid
+        "pid": pid,
+        "ip": ip,
+        "timezone": timezone,
+        "proxy": proxy,
+        "vpn_server": vpn_server
     }
     save_sessions(data)
 

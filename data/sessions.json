@@ -1,74 +1,32 @@
 {
-  "33801feb": {
-    "status": "CLOSED",
-    "url": "https://www.facebook.com",
-    "profile_dir": "d:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\33801feb",
-    "pid": 9300
-  },
-  "0d110d3e": {
-    "status": "CLOSED",
-    "url": "https://www.facebook.com",
-    "profile_dir": "d:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\0d110d3e",
-    "pid": 4836
-  },
-  "36ac8a58": {
-    "status": "CLOSED",
-    "url": "https://www.facebook.com",
-    "profile_dir": "d:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\36ac8a58",
-    "pid": 25776
-  },
-  "41c5a816": {
+  "2f7e234e": {
     "status": "CLOSED",
     "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\41c5a816",
-    "pid": 23188
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\2f7e234e",
+    "pid": 16792,
+    "ip": "45.118.79.102",
+    "timezone": "Asia/Phnom_Penh",
+    "proxy": null,
+    "vpn_server": null
   },
-  "2fe38a5d": {
+  "c9684abf": {
     "status": "CLOSED",
     "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\2fe38a5d",
-    "pid": 8604
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\c9684abf",
+    "pid": 23108,
+    "ip": "45.118.79.102",
+    "timezone": "Asia/Phnom_Penh",
+    "proxy": null,
+    "vpn_server": null
   },
-  "f5d6c4b3": {
+  "47738651": {
     "status": "CLOSED",
     "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\f5d6c4b3",
-    "pid": 38280
-  },
-  "e371728e": {
-    "status": "CLOSED",
-    "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\e371728e",
-    "pid": 24684
-  },
-  "33ded9ed": {
-    "status": "CLOSED",
-    "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\33ded9ed",
-    "pid": 8824
-  },
-  "ccc9aa67": {
-    "status": "CLOSED",
-    "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\ccc9aa67",
-    "pid": 41432
-  },
-  "fce9b146": {
-    "status": "CLOSED",
-    "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\fce9b146",
-    "pid": 23952
-  },
-  "b1d6b511": {
-    "status": "CLOSED",
-    "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\b1d6b511",
-    "pid": 28564
-  },
-  "18fd420d": {
-    "status": "CLOSED",
-    "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\18fd420d",
-    "pid": 12784
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\47738651",
+    "pid": 19128,
+    "ip": "45.118.79.102",
+    "timezone": "Asia/Phnom_Penh",
+    "proxy": null,
+    "vpn_server": null
   }
 }

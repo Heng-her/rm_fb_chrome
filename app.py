@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request
 import threading
 import webview
 
-from core.chrome_manager import open_chrome, close_chrome, is_pid_alive
+from core.chrome_manager import open_chrome, close_chrome, is_pid_alive, get_vpn_locations
 from core.session_store import get_sessions, update_session
 
 app = Flask(
@@ -15,13 +15,20 @@ app = Flask(
 def index():
     return render_template("index.html")
 
+@app.route("/vpn_locations")
+def vpn_locations():
+    return jsonify(get_vpn_locations())
+
 @app.route("/open_chrome", methods=["POST"])
 def open_chrome_route():
     data = request.json or {}
     session_id = data.get("session_id")
+    proxy = data.get("proxy")
+    vpn_server = data.get("vpn_server")
+    url = data.get("url") or "https://www.ident.me"
 
     try:
-        session_id = open_chrome(session_id=session_id)
+        session_id = open_chrome(session_id=session_id, proxy=proxy, url=url, vpn_server=vpn_server)
         return jsonify({"session_id": session_id})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

@@ -1,9 +1,14 @@
 function openChrome(sessionId = null) {
+    const customUrl = document.getElementById("custom_url").value || "https://m.facebook.com";
+    const customProxy = document.getElementById("custom_proxy").value || null;
+
     fetch("/open_chrome", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            session_id: sessionId
+            session_id: sessionId,
+            url: customUrl,
+            proxy: customProxy
         })
     });
 }
@@ -27,15 +32,18 @@ function loadStatus() {
             for (const id in data) {
                 const s = data[id];
 
+                const actionButton = s.status === "OPEN" 
+                    ? `<button onclick="CloseChrom('${id}')">Close</button>`
+                    : `<button onclick="openChrome('${id}')">Open</button>`;
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${id}</td>
                         <td>${s.status}</td>
+                        <td>${s.ip || 'Unknown'}</td>
+                        <td>${s.timezone || 'Unknown'}</td>
                         <td>${s.url}</td>
-                        <td>
-                            <button onclick="openChrome('${id}')">Open</button>
-                            <button onclick="CloseChrom('${id}')">Close</button>
-                        </td>
+                        <td>${actionButton}</td>
                     </tr>
                 `;
             }
