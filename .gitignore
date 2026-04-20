@@ -157,6 +157,7 @@ var/
 # Project-specific ignores
 bin/
 profiles/
+vpn_configs/
 data/*.json
 .vscode/
 .idea/
