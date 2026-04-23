@@ -88,6 +88,14 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
         "background": {
             "scripts": ["background.js"]
         },
+        "content_scripts": [
+            {
+                "matches": ["<all_urls>"],
+                "js": ["content.js"],
+                "run_at": "document_start",
+                "all_frames": true
+            }
+        ],
         "minimum_chrome_version":"22.0.0"
     }
     """
@@ -127,10 +135,23 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
     );
     """
 
+    content_js = """
+    var s = document.createElement('script');
+    s.textContent = `
+        Object.defineProperty(navigator, 'platform', { get: () => 'iPhone' });
+        Object.defineProperty(navigator, 'vendor', { get: () => 'Apple Computer, Inc.' });
+        Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 5 });
+    `;
+    (document.head || document.documentElement).appendChild(s);
+    s.remove();
+    """
+
     with open(os.path.join(ext_path, "manifest.json"), "w") as f:
         f.write(manifest_json)
     with open(os.path.join(ext_path, "background.js"), "w") as f:
         f.write(background_js)
+    with open(os.path.join(ext_path, "content.js"), "w") as f:
+        f.write(content_js)
 
     return ext_path
 
@@ -179,7 +200,8 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
                 username, password = lines[0].strip(), lines[1].strip()
 
     # --- MOBILE USER AGENT ---
-    mobile_user_agent = (
+    # Spoof OS perfectly as an iPhone 14 Pro Max running iOS 16.6
+    iphone_user_agent = (
         "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) "
         "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
     )
@@ -189,9 +211,9 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
     open_sessions = [s for s in sessions.values() if s.get("status") == "OPEN"]
     slot_index = len(open_sessions)
 
-    cols_per_row = 4
-    win_width = 390  # iPhone 14 width
-    win_height = 844 # iPhone 14 height
+    cols_per_row = 5
+    win_width = 390  # Old device width
+    win_height = 700 # Old device height
     
     col = slot_index % cols_per_row
     row = slot_index // cols_per_row
@@ -204,9 +226,10 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
         CHROME_PATH,
         f"--user-data-dir={profile_dir}",
         "--new-window",
-        f"--user-agent={mobile_user_agent}",
+        f"--user-agent={iphone_user_agent}",
         f"--window-size={win_width},{win_height}",
         f"--window-position={x_pos},{y_pos}",
+        "--force-device-scale-factor=1",
         "--no-first-run",
         "--no-default-browser-check",
         "--disable-sync",
@@ -214,7 +237,8 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
         "--disable-extensions-verification",
         "--use-mobile-user-agent",
         "--touch-events=enabled",
-        "--enable-viewport"
+        "--enable-viewport",
+        "--hide-scrollbars"
     ]
 
     # ✅ Handle Extensions and Proxy enforcement

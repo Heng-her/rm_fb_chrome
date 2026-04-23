@@ -1,60 +1,90 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Chrome Tool</title>
     <script src="/static/app.js"></script>
-  </head>
-  <body>
-    <h2>Chrome Sessions</h2>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+        h2 { color: #2c3e50; }
+        .flex-container { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .card { border: 1px solid #e1e8ed; padding: 20px; border-radius: 8px; background: #ffffff; min-width: 350px; flex: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card h3 { margin-top: 0; color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #555; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #3498db; box-shadow: 0 0 5px rgba(52, 152, 219, 0.3); }
+        .btn-group { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+        button { padding: 10px 15px; cursor: pointer; border: none; background: #3498db; color: white; border-radius: 4px; font-weight: bold; transition: background 0.2s; }
+        button:hover { background: #2980b9; }
+        .btn-success { background: #2ecc71; }
+        .btn-success:hover { background: #27ae60; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+        th, td { border-bottom: 1px solid #ecf0f1; padding: 12px 15px; text-align: left; }
+        th { background-color: #34495e; color: #ffffff; font-weight: bold; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f9fbfc; }
+        /* Action buttons in table */
+        td button { padding: 6px 10px; font-size: 12px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Chrome Sessions Dashboard</h2>
 
-    <div
-      style="
-        margin-bottom: 20px;
-        border: 1px solid #ccc;
-        padding: 10px;
-        display: inline-block;
-      "
-    >
-      <h3>Custom Open</h3>
-      <label
-        >URL:
-        <input
-          type="text"
-          id="custom_url"
-          placeholder="https://m.facebook.com"
-          style="width: 300px" /></label
-      ><br /><br />
-      <label
-        >VPN Location:
-        <select id="vpn_location" style="width: 300px">
-          <option value="">None (Local IP)</option>
-        </select></label
-      ><br /><br />
-      <label
-        >Proxy:
-        <input
-          type="text"
-          id="custom_proxy"
-          placeholder="http://ip:port"
-          style="width: 300px" /></label
-      ><br /><br />
-      <button onclick="openChrome()">Open NEW Session</button>
-      <button onclick="createNewProfile()">Create Profile Only</button>
+    <div class="flex-container">
+        <!-- Surfshark VPN Credentials -->
+        <div class="card">
+            <h3>Surfshark VPN Credentials</h3>
+            <div class="form-group">
+                <label>Service Username:</label>
+                <input type="text" id="surf_username" placeholder="Enter Service Username">
+            </div>
+            <div class="form-group">
+                <label>Service Password:</label>
+                <input type="password" id="surf_password" placeholder="Enter Service Password">
+            </div>
+            <div class="btn-group">
+                <button onclick="saveCredentials()">Save Credentials</button>
+                <span id="cred_status" style="color: #27ae60; display: none; font-weight: bold;">✔ Saved Successfully!</span>
+            </div>
+        </div>
+
+        <!-- Custom Open -->
+        <div class="card">
+            <h3>Launch Configuration</h3>
+            <div class="form-group">
+                <label>Target URL:</label>
+                <input type="text" id="custom_url" placeholder="https://m.facebook.com">
+            </div>
+            <div class="form-group">
+                <label>VPN Location:</label>
+                <select id="vpn_location">
+                    <option value="">None (Local IP / Direct Connection)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Custom Proxy (Optional):</label>
+                <input type="text" id="custom_proxy" placeholder="http://username:password@ip:port">
+            </div>
+            <div class="btn-group">
+                <button onclick="openChrome()">Launch Chrome Session</button>
+                <button onclick="createNewProfile()" class="btn-success">Create Profile Only</button>
+            </div>
+        </div>
     </div>
 
-    <table border="1">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Status</th>
-          <th>VPN Server</th>
-          <th>IP Address</th>
-          <th>Timezone</th>
-          <th>URL</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="sessions"></tbody>
+    <table>
+        <thead>
+            <tr>
+                <th>Session ID</th>
+                <th>Status</th>
+                <th>VPN Server</th>
+                <th>IP Address</th>
+                <th>Timezone</th>
+                <th>Current URL</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="sessions"></tbody>
     </table>
-  </body>
+</body>
 </html>
