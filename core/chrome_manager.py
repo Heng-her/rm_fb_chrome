@@ -1,7 +1,8 @@
 import subprocess
 import uuid
 import os
-# import signal
+import socket
+import random
 import win32gui
 import win32process
 import win32con
@@ -25,6 +26,15 @@ def is_pid_alive(pid):
     except Exception:
         return False
 
+def get_random_ip_for_host(hostname):
+    try:
+        _, _, ip_list = socket.gethostbyname_ex(hostname)
+        if ip_list:
+            return random.choice(ip_list)
+    except Exception:
+        pass
+    return hostname
+
 def get_ip_info(proxy=None, vpn_server=None, username=None, password=None):
     try:
         proxies = None
@@ -32,7 +42,8 @@ def get_ip_info(proxy=None, vpn_server=None, username=None, password=None):
             proxy_url = f"https://{username}:{password}@{vpn_server}:443"
             proxies = {"http": proxy_url, "https": proxy_url}
         elif proxy:
-            proxies = {"http": proxy, "https": proxy}
+            proxy_url = proxy if "://" in proxy else f"http://{proxy}"
+            proxies = {"http": proxy_url, "https": proxy_url}
 
         # Use ip-api.com (JSON, no auth required for low frequency)
         response = requests.get("http://ip-api.com/json/", proxies=proxies, timeout=10)
@@ -209,12 +220,20 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
     # ✅ Handle Extensions and Proxy enforcement
     extensions = []
     
+    vpn_server_for_ip_check = vpn_server
+
     # 1. Proxy Auth (highest priority if vpn_server or proxy is provided)
     if vpn_server and username and password:
+        resolved_ip = get_random_ip_for_host(vpn_server)
+        # We DO NOT set vpn_server_for_ip_check = resolved_ip here because
+        # python 'requests' will fail SSL validation if an IP address is used
+        # in the HTTPS proxy URL instead of the domain name.
+        
+        # Use the original hostname for the extension so the SSL certificate matches!
         ext_path = create_proxy_auth_extension(vpn_server, 443, username, password, session_id, scheme="https")
         extensions.append(ext_path)
-        cmd.append(f"--proxy-server=https://{vpn_server}:443")
-        cmd.append("--ignore-certificate-errors")
+        # Force Chrome to connect to the randomly resolved IP instead of caching the load balancer
+        cmd.append(f"--host-resolver-rules=MAP {vpn_server} {resolved_ip}")
     elif proxy and "@" in proxy:
         try:
             p_part = proxy.split("@")
@@ -230,7 +249,6 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
             h, pt = host_part.split(":")
             ext_path = create_proxy_auth_extension(h, pt, u, p, session_id, scheme=scheme)
             extensions.append(ext_path)
-            cmd.append(f"--proxy-server={scheme}://{h}:{pt}")
             cmd.append("--ignore-certificate-errors")
         except: pass
 
@@ -268,7 +286,7 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
 
     # Fetch IP info in background
     def update_ip_async():
-        new_ip, new_tz = get_ip_info(proxy, vpn_server, username, password)
+        new_ip, new_tz = get_ip_info(proxy, vpn_server_for_ip_check, username, password)
         update_session(session_id, {"ip": new_ip, "timezone": new_tz})
 
     import threading

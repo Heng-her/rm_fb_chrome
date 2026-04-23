@@ -1,34 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Chrome Tool</title>
     <script src="/static/app.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <h2>Chrome Sessions</h2>
 
-    <div style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; display: inline-block;">
-        <h3>Custom Open</h3>
-        <label>URL: <input type="text" id="custom_url" placeholder="https://m.facebook.com" style="width: 300px;"></label><br><br>
-        <label>VPN Location: <select id="vpn_location" style="width: 300px;"><option value="">None (Local IP)</option></select></label><br><br>
-        <label>Proxy: <input type="text" id="custom_proxy" placeholder="http://ip:port" style="width: 300px;"></label><br><br>
-        <button onclick="openChrome()">Open NEW Session</button>
-        <button onclick="createNewProfile()">Create Profile Only</button>
+    <div
+      style="
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        display: inline-block;
+      "
+    >
+      <h3>Custom Open</h3>
+      <label
+        >URL:
+        <input
+          type="text"
+          id="custom_url"
+          placeholder="https://m.facebook.com"
+          style="width: 300px" /></label
+      ><br /><br />
+      <label
+        >VPN Location:
+        <select id="vpn_location" style="width: 300px">
+          <option value="">None (Local IP)</option>
+        </select></label
+      ><br /><br />
+      <label
+        >Proxy:
+        <input
+          type="text"
+          id="custom_proxy"
+          placeholder="http://ip:port"
+          style="width: 300px" /></label
+      ><br /><br />
+      <button onclick="openChrome()">Open NEW Session</button>
+      <button onclick="createNewProfile()">Create Profile Only</button>
     </div>
 
     <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Status</th>
-                <th>VPN Server</th>
-                <th>IP Address</th>
-                <th>Timezone</th>
-                <th>URL</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="sessions"></tbody>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>VPN Server</th>
+          <th>IP Address</th>
+          <th>Timezone</th>
+          <th>URL</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="sessions"></tbody>
     </table>
-</body>
+  </body>
 </html>

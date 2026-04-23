@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 import threading
 import webview
+import os
 
 from core.chrome_manager import open_chrome, close_chrome, is_pid_alive, get_vpn_locations, create_profile, delete_profile
 from core.session_store import get_sessions, update_session
@@ -18,6 +19,26 @@ def index():
 @app.route("/vpn_locations")
 def vpn_locations():
     return jsonify(get_vpn_locations())
+
+@app.route("/credentials", methods=["GET", "POST"])
+def credentials_route():
+    creds_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vpn_configs", "credentials.txt")
+    if request.method == "POST":
+        data = request.json or {}
+        username = data.get("username", "")
+        password = data.get("password", "")
+        os.makedirs(os.path.dirname(creds_path), exist_ok=True)
+        with open(creds_path, "w") as f:
+            f.write(f"{username}\n{password}\n")
+        return jsonify({"status": "success"})
+    else:
+        username, password = "", ""
+        if os.path.exists(creds_path):
+            with open(creds_path, "r") as f:
+                lines = f.read().splitlines()
+                if len(lines) >= 2:
+                    username, password = lines[0].strip(), lines[1].strip()
+        return jsonify({"username": username, "password": password})
 
 @app.route("/create_profile", methods=["POST"])
 def create_profile_route():

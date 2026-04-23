@@ -1,32 +1,42 @@
 {
-  "8f3c41c0": {
+  "cfc38b19": {
     "status": "CLOSED",
     "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\8f3c41c0",
-    "pid": 4356,
-    "ip": "Unknown",
-    "timezone": "Unknown",
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\cfc38b19",
+    "pid": 21772,
+    "ip": "62.197.152.70",
+    "timezone": "Europe/Andorra",
     "proxy": null,
-    "vpn_server": "us-chi.prod.surfshark.com"
+    "vpn_server": "ad-leu.prod.surfshark.com"
   },
-  "6c70cea5": {
+  "af150686": {
     "status": "CLOSED",
     "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\6c70cea5",
-    "pid": 17336,
-    "ip": "103.103.98.4",
-    "timezone": "America/Chicago",
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\af150686",
+    "pid": 15832,
+    "ip": "62.197.152.198",
+    "timezone": "Europe/Andorra",
     "proxy": null,
-    "vpn_server": "us-chi.prod.surfshark.com"
+    "vpn_server": "ad-leu.prod.surfshark.com"
   },
-  "217678e1": {
+  "49df2d42": {
     "status": "CLOSED",
     "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\217678e1",
-    "pid": 22124,
-    "ip": "212.102.44.89",
-    "timezone": "America/Denver",
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\49df2d42",
+    "pid": 15136,
+    "ip": "152.89.163.246",
+    "timezone": "Europe/Berlin",
     "proxy": null,
-    "vpn_server": "us-den.prod.surfshark.com"
+    "vpn_server": "de-ber.prod.surfshark.com"
+  },
+  "ee5dfb95": {
+    "status": "CLOSED",
+    "url": "http://whoer.net/",
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\ee5dfb95",
+    "pid": 12320,
+    "ip": "152.89.163.246",
+    "timezone": "Europe/Berlin",
+    "proxy": null,
+    "vpn_server": "de-ber.prod.surfshark.com"
   }
 }
