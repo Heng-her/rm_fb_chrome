@@ -100,21 +100,11 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
     }
     """
 
+    import json
+    safe_username = json.dumps(username)
+    safe_password = json.dumps(password)
+
     background_js = f"""
-    var config = {{
-        mode: "fixed_servers",
-        rules: {{
-            singleProxy: {{
-                scheme: "{scheme}",
-                host: "{proxy_host}",
-                port: parseInt({proxy_port})
-            }},
-            bypassList: ["localhost"]
-        }}
-    }};
-
-    chrome.proxy.settings.set({{value: config, scope: "regular"}}, function() {{}});
-
     if (chrome.privacy && chrome.privacy.network && chrome.privacy.network.webRTCIPHandlingPolicy) {{
         chrome.privacy.network.webRTCIPHandlingPolicy.set({{
             value: "disable_non_proxied_udp"
@@ -125,8 +115,8 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
         function(details) {{
             return {{
                 authCredentials: {{
-                    username: "{username}",
-                    password: "{password}"
+                    username: {safe_username},
+                    password: {safe_password}
                 }}
             }};
         }},
@@ -141,6 +131,21 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
         Object.defineProperty(navigator, 'platform', { get: () => 'iPhone' });
         Object.defineProperty(navigator, 'vendor', { get: () => 'Apple Computer, Inc.' });
         Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 5 });
+
+        // Block HTML5 Geolocation to prevent real physical location leaks
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition = function(success, error) {
+                if (error) {
+                    error({ code: 1, message: "User denied Geolocation" });
+                }
+            };
+            navigator.geolocation.watchPosition = function(success, error) {
+                if (error) {
+                    error({ code: 1, message: "User denied Geolocation" });
+                }
+                return 0;
+            };
+        }
     `;
     (document.head || document.documentElement).appendChild(s);
     s.remove();
@@ -257,7 +262,10 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
         ext_path = create_proxy_auth_extension(vpn_server, 443, username, password, session_id, scheme="https")
         extensions.append(ext_path)
         # Force Chrome to connect to the randomly resolved IP instead of caching the load balancer
-        cmd.append(f"--host-resolver-rules=MAP {vpn_server} {resolved_ip}")
+        cmd.append(f'--host-resolver-rules=MAP {vpn_server} {resolved_ip}')
+        cmd.append(f"--proxy-server=https://{vpn_server}:443")
+        cmd.append("--ignore-certificate-errors")
+        cmd.append("--test-type")
     elif proxy and "@" in proxy:
         try:
             p_part = proxy.split("@")
@@ -273,7 +281,9 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
             h, pt = host_part.split(":")
             ext_path = create_proxy_auth_extension(h, pt, u, p, session_id, scheme=scheme)
             extensions.append(ext_path)
+            cmd.append(f"--proxy-server={scheme}://{h}:{pt}")
             cmd.append("--ignore-certificate-errors")
+            cmd.append("--test-type")
         except: pass
 
     # 2. Check for OFFICIAL Surfshark extension (only if no proxy/vpn was forced)
