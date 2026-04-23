@@ -158,9 +158,8 @@ var/
 bin/
 profiles/
 vpn_configs/
+surfshark_ext/
 data/*.json
 .vscode/
 .idea/
 *.spec
-
-

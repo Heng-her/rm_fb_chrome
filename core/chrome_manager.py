@@ -7,10 +7,12 @@ import win32process
 import win32con
 import time
 from core.session_store import add_session, get_session, get_sessions, update_session
+import requests
 
 _basedir = os.path.dirname(os.path.abspath(__file__))
 CHROME_PATH = os.path.abspath(os.path.join(_basedir, "..", "bin", "chrome.exe"))
 PROFILE_BASE_DIR = os.path.abspath(os.path.join(_basedir, "..", "profiles"))
+VPN_CONFIGS_DIR = os.path.abspath(os.path.join(_basedir, "..", "vpn_configs"))
 
 def is_pid_alive(pid):
     if not pid:
@@ -22,24 +24,24 @@ def is_pid_alive(pid):
         return str(pid) in output
     except Exception:
         return False
-import requests
 
-def get_ip_info():
+def get_ip_info(proxy=None, vpn_server=None, username=None, password=None):
     try:
+        proxies = None
+        if vpn_server and username and password:
+            proxy_url = f"https://{username}:{password}@{vpn_server}:443"
+            proxies = {"http": proxy_url, "https": proxy_url}
+        elif proxy:
+            proxies = {"http": proxy, "https": proxy}
+
         # Use ip-api.com (JSON, no auth required for low frequency)
-        response = requests.get("http://ip-api.com/json/", timeout=5)
+        response = requests.get("http://ip-api.com/json/", proxies=proxies, timeout=10)
         if response.status_code == 200:
             data = response.json()
             return data.get("query", "Unknown"), data.get("timezone", "Unknown")
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Error getting IP info: {e}")
     return "Unknown", "Unknown"
-# https://www.ident.me/
-# https://m.facebook.com
-
-import random
-
-VPN_CONFIGS_DIR = os.path.abspath(os.path.join(_basedir, "..", "vpn_configs"))
 
 def get_vpn_locations():
     locations = []
@@ -52,7 +54,7 @@ def get_vpn_locations():
                 locations.append({"name": name, "server": server})
     return sorted(locations, key=lambda x: x["name"])
 
-def create_proxy_auth_extension(proxy_host, proxy_port, username, password, session_id):
+def create_proxy_auth_extension(proxy_host, proxy_port, username, password, session_id, scheme="http"):
     """Creates a temporary extension to handle proxy authentication."""
     ext_path = os.path.join(PROFILE_BASE_DIR, session_id, "proxy_auth_ext")
     os.makedirs(ext_path, exist_ok=True)
@@ -67,6 +69,7 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
             "tabs",
             "unlimitedStorage",
             "storage",
+            "privacy",
             "<all_urls>",
             "webRequest",
             "webRequestBlocking"
@@ -83,7 +86,7 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
         mode: "fixed_servers",
         rules: {{
             singleProxy: {{
-                scheme: "http",
+                scheme: "{scheme}",
                 host: "{proxy_host}",
                 port: parseInt({proxy_port})
             }},
@@ -92,6 +95,12 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
     }};
 
     chrome.proxy.settings.set({{value: config, scope: "regular"}}, function() {{}});
+
+    if (chrome.privacy && chrome.privacy.network && chrome.privacy.network.webRTCIPHandlingPolicy) {{
+        chrome.privacy.network.webRTCIPHandlingPolicy.set({{
+            value: "disable_non_proxied_udp"
+        }});
+    }}
 
     chrome.webRequest.onAuthRequired.addListener(
         function(details) {{
@@ -114,27 +123,12 @@ def create_proxy_auth_extension(proxy_host, proxy_port, username, password, sess
 
     return ext_path
 
-def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_server=None):
-    # NEW SESSION
-    if not session_id:
-        session_id = str(uuid.uuid4())[:8]
-        profile_dir = os.path.join(PROFILE_BASE_DIR, session_id)
-        os.makedirs(profile_dir, exist_ok=True)
-        # Fetch IP info (this will be the backend IP unless you route the request through the same proxy)
-        ip, tz = get_ip_info()
-    else:
-        session = get_session(session_id)
-        if not session:
-            raise ValueError("Session not found")
-        profile_dir = session["profile_dir"]
-        ip = session.get("ip", "Unknown")
-        tz = session.get("timezone", "Unknown")
-        proxy = proxy or session.get("proxy")
-        vpn_server = vpn_server or session.get("vpn_server")
-
-    profile_dir = os.path.abspath(profile_dir)
-
-    # Load Surfshark Credentials
+def create_profile(vpn_server=None, proxy=None):
+    session_id = str(uuid.uuid4())[:8]
+    profile_dir = os.path.join(PROFILE_BASE_DIR, session_id)
+    os.makedirs(profile_dir, exist_ok=True)
+    
+    # Load Surfshark Credentials for IP check
     creds_path = os.path.join(VPN_CONFIGS_DIR, "credentials.txt")
     username, password = "", ""
     if os.path.exists(creds_path):
@@ -143,56 +137,127 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
             if len(lines) >= 2:
                 username, password = lines[0].strip(), lines[1].strip()
 
-    iphone_user_agent = (
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) "
-        "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-        "Version/15.0 Mobile/15E148 Safari/604.1"
+    ip, tz = get_ip_info(proxy, vpn_server, username, password)
+    
+    add_session(session_id, "CLOSED", "https://m.facebook.com", profile_dir, None, ip, tz, proxy, vpn_server)
+    return session_id
+
+def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_server=None):
+    # NEW SESSION
+    if not session_id:
+        session_id = str(uuid.uuid4())[:8]
+        profile_dir = os.path.join(PROFILE_BASE_DIR, session_id)
+        os.makedirs(profile_dir, exist_ok=True)
+    else:
+        session = get_session(session_id)
+        if not session:
+            raise ValueError("Session not found")
+        profile_dir = session["profile_dir"]
+        proxy = proxy or session.get("proxy")
+        vpn_server = vpn_server or session.get("vpn_server")
+
+    profile_dir = os.path.abspath(profile_dir)
+
+    # Fetch Surfshark Credentials
+    creds_path = os.path.join(VPN_CONFIGS_DIR, "credentials.txt")
+    username, password = "", ""
+    if os.path.exists(creds_path):
+        with open(creds_path, "r") as f:
+            lines = f.read().splitlines()
+            if len(lines) >= 2:
+                username, password = lines[0].strip(), lines[1].strip()
+
+    # --- MOBILE USER AGENT ---
+    mobile_user_agent = (
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) "
+        "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
     )
 
-    # Safer grid layout logic
+    # Grid layout logic
     sessions = get_sessions()
     open_sessions = [s for s in sessions.values() if s.get("status") == "OPEN"]
     slot_index = len(open_sessions)
 
-    cols_per_row = 4 # Reduced to 4 for safety
-    win_width = 390
-    win_height = 700
+    cols_per_row = 4
+    win_width = 390  # iPhone 14 width
+    win_height = 844 # iPhone 14 height
     
     col = slot_index % cols_per_row
     row = slot_index // cols_per_row
-    
-    # Use a small starting offset (e.g., 50, 50) to avoid the very edge
     x_pos = 50 + (col * (win_width + 10))
-    y_pos = 50 + (row * 50) # Stack rows slightly rather than full height to keep visible
+    y_pos = 50 + (row * 50)
+    # -----------------------------------------------------
 
+    # Build the Chrome command
     cmd = [
         CHROME_PATH,
         f"--user-data-dir={profile_dir}",
         "--new-window",
-        f"--user-agent={iphone_user_agent}",
+        f"--user-agent={mobile_user_agent}",
         f"--window-size={win_width},{win_height}",
         f"--window-position={x_pos},{y_pos}",
-        "--force-device-scale-factor=1",
         "--no-first-run",
         "--no-default-browser-check",
         "--disable-sync",
-        "--disable-blink-features=AutomationControlled",
-        "--excludeSwitches=enable-automation",
-        url
+        "--extensions-install-verification=none",
+        "--disable-extensions-verification",
+        "--use-mobile-user-agent",
+        "--touch-events=enabled",
+        "--enable-viewport"
     ]
 
-    # ✅ Handle VPN via HTTP Proxy (Surfshark port 1232) + Auth Extension
-    # Note: Surfshark SOCKS5 uses 1080, but HTTP 1232 is often more stable in Chrome
+    # ✅ Handle Extensions and Proxy enforcement
+    extensions = []
+    
+    # 1. Proxy Auth (highest priority if vpn_server or proxy is provided)
     if vpn_server and username and password:
-        ext_path = create_proxy_auth_extension(vpn_server, 1232, username, password, session_id)
-        cmd.append(f"--load-extension={ext_path}")
-    elif proxy:
-        cmd.append(f"--proxy-server={proxy}")
+        ext_path = create_proxy_auth_extension(vpn_server, 443, username, password, session_id, scheme="https")
+        extensions.append(ext_path)
+        cmd.append(f"--proxy-server=https://{vpn_server}:443")
+        cmd.append("--ignore-certificate-errors")
+    elif proxy and "@" in proxy:
+        try:
+            p_part = proxy.split("@")
+            auth_part = p_part[0]
+            scheme = "http"
+            if auth_part.startswith("https://"):
+                scheme = "https"
+                auth_part = auth_part.replace("https://", "")
+            else:
+                auth_part = auth_part.replace("http://", "")
+            host_part = p_part[1]
+            u, p = auth_part.split(":")
+            h, pt = host_part.split(":")
+            ext_path = create_proxy_auth_extension(h, pt, u, p, session_id, scheme=scheme)
+            extensions.append(ext_path)
+            cmd.append(f"--proxy-server={scheme}://{h}:{pt}")
+            cmd.append("--ignore-certificate-errors")
+        except: pass
 
+    # 2. Check for OFFICIAL Surfshark extension (only if no proxy/vpn was forced)
+    if not extensions:
+        official_surf_path = os.path.normpath(os.path.join(_basedir, "..", "surfshark_ext", "unpacked"))
+        if os.path.exists(os.path.join(official_surf_path, "manifest.json")):
+            extensions.append(official_surf_path)
+            print(f"DEBUG: Found official extension at: {official_surf_path}")
+
+    if extensions:
+        ext_string = ",".join(extensions)
+        cmd.append(f"--load-extension={ext_string}")
+        cmd.append(f"--disable-extensions-except={ext_string}")
+
+    # Open target URL and Extensions page
+    cmd.append(url)
+    cmd.append("chrome://extensions/")
+
+    print(f"DEBUG: Running command: {' '.join(cmd)}")
+    
+    # Launch Chrome INSTANTLY
     proc = subprocess.Popen(cmd)
 
+    # Save basic info first
     if not get_session(session_id):
-        add_session(session_id, "OPEN", url, profile_dir, proc.pid, ip, tz, proxy, vpn_server)
+        add_session(session_id, "OPEN", url, profile_dir, proc.pid, "Detecting...", "Detecting...", proxy, vpn_server)
     else:
         update_session(session_id, {
             "status": "OPEN",
@@ -200,6 +265,14 @@ def open_chrome(session_id=None, url="https://www.ident.me", proxy=None, vpn_ser
             "proxy": proxy,
             "vpn_server": vpn_server
         })
+
+    # Fetch IP info in background
+    def update_ip_async():
+        new_ip, new_tz = get_ip_info(proxy, vpn_server, username, password)
+        update_session(session_id, {"ip": new_ip, "timezone": new_tz})
+
+    import threading
+    threading.Thread(target=update_ip_async, daemon=True).start()
 
     return session_id
 
@@ -237,3 +310,28 @@ def close_chrome(session_id):
 
     update_session(session_id, {"status": "CLOSED"})
     return True, "Chrome closed gracefully"
+
+def delete_profile(session_id):
+    session = get_session(session_id)
+    if not session:
+        return False, "Session not found"
+
+    if session.get("status") == "OPEN":
+        return False, "Cannot delete an open session. Close it first."
+
+    profile_dir = session.get("profile_dir")
+    
+    # 1. Remove from session store
+    from core.session_store import remove_session
+    remove_session(session_id)
+
+    # 2. Delete the physical directory
+    import shutil
+    if profile_dir and os.path.exists(profile_dir):
+        try:
+            shutil.rmtree(profile_dir)
+            return True, "Profile deleted successfully"
+        except Exception as e:
+            return False, f"Error deleting directory: {str(e)}"
+    
+    return True, "Session removed, but directory was not found"

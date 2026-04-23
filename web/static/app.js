@@ -1,17 +1,53 @@
 function openChrome(sessionId = null) {
-    const customUrl = document.getElementById("custom_url").value || "https://m.facebook.com";
-    const customProxy = document.getElementById("custom_proxy").value || null;
+    let customUrl = document.getElementById("custom_url").value || "https://m.facebook.com";
+    let customProxy = document.getElementById("custom_proxy").value || null;
+    let vpnLocation = document.getElementById("vpn_location").value || null;
+
+    // If reopening an existing session, we don't need to send new custom values 
+    // unless the backend expects them to override.
+    const payload = {
+        session_id: sessionId,
+        url: sessionId ? null : customUrl,
+        proxy: sessionId ? null : customProxy,
+        vpn_server: sessionId ? null : vpnLocation
+    };
 
     fetch("/open_chrome", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            session_id: sessionId,
-            url: customUrl,
-            proxy: customProxy
-        })
+        body: JSON.stringify(payload)
     });
 }
+
+function createNewProfile() {
+    let customProxy = document.getElementById("custom_proxy").value || null;
+    let vpnLocation = document.getElementById("vpn_location").value || null;
+
+    fetch("/create_profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            proxy: customProxy,
+            vpn_server: vpnLocation
+        })
+    }).then(() => loadStatus());
+}
+
+function loadVpnLocations() {
+    fetch("/vpn_locations")
+        .then(r => r.json())
+        .then(locations => {
+            const select = document.getElementById("vpn_location");
+            locations.forEach(loc => {
+                const opt = document.createElement("option");
+                opt.value = loc.server;
+                opt.textContent = loc.name;
+                select.appendChild(opt);
+            });
+        });
+}
+loadVpnLocations();
+
 function CloseChrom(SessionId = null) {
     fetch("/close_chrome", {
         method: "POST",
@@ -20,6 +56,18 @@ function CloseChrom(SessionId = null) {
             session_id: SessionId
         })
     })
+}
+
+function deleteProfile(sessionId) {
+    if (!confirm("Are you sure you want to delete this profile? All data will be lost.")) return;
+    
+    fetch("/delete_profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            session_id: sessionId
+        })
+    }).then(() => loadStatus());
 }
 
 function loadStatus() {
@@ -32,14 +80,21 @@ function loadStatus() {
             for (const id in data) {
                 const s = data[id];
 
-                const actionButton = s.status === "OPEN" 
-                    ? `<button onclick="CloseChrom('${id}')">Close</button>`
-                    : `<button onclick="openChrome('${id}')">Open</button>`;
+                let actionButton = "";
+                if (s.status === "OPEN") {
+                    actionButton = `<button onclick="CloseChrom('${id}')">Close</button>`;
+                } else {
+                    actionButton = `
+                        <button onclick="openChrome('${id}')">Open</button>
+                        <button onclick="deleteProfile('${id}')" style="color: red;">Delete</button>
+                    `;
+                }
 
                 tbody.innerHTML += `
                     <tr>
                         <td>${id}</td>
                         <td>${s.status}</td>
+                        <td>${s.vpn_server || 'None'}</td>
                         <td>${s.ip || 'Unknown'}</td>
                         <td>${s.timezone || 'Unknown'}</td>
                         <td>${s.url}</td>

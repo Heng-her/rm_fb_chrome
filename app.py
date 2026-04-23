@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request
 import threading
 import webview
 
-from core.chrome_manager import open_chrome, close_chrome, is_pid_alive, get_vpn_locations
+from core.chrome_manager import open_chrome, close_chrome, is_pid_alive, get_vpn_locations, create_profile, delete_profile
 from core.session_store import get_sessions, update_session
 
 app = Flask(
@@ -19,6 +19,17 @@ def index():
 def vpn_locations():
     return jsonify(get_vpn_locations())
 
+@app.route("/create_profile", methods=["POST"])
+def create_profile_route():
+    data = request.json or {}
+    proxy = data.get("proxy")
+    vpn_server = data.get("vpn_server")
+    try:
+        session_id = create_profile(vpn_server=vpn_server, proxy=proxy)
+        return jsonify({"session_id": session_id})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route("/open_chrome", methods=["POST"])
 def open_chrome_route():
     data = request.json or {}
@@ -32,6 +43,19 @@ def open_chrome_route():
         return jsonify({"session_id": session_id})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/delete_profile", methods=["POST"])
+def delete_profile_route():
+    data = request.json or {}
+    session_id = data.get("session_id")
+    if not session_id:
+        return jsonify({"status": "error", "message": "session_id is required"}), 400
+
+    success, message = delete_profile(session_id)
+    if success:
+        return jsonify({"status": "success", "message": message})
+    else:
+        return jsonify({"status": "error", "message": message}), 500
 
 @app.route("/close_chrome", methods=["POST"])
 def close_chrome_route():
