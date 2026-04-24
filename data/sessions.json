@@ -1,22 +1,22 @@
 {
-  "7b625001": {
+  "3657f145": {
     "status": "CLOSED",
     "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\7b625001",
-    "pid": 2692,
-    "ip": "89.222.103.111",
-    "timezone": "America/New_York",
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\3657f145",
+    "pid": 3020,
+    "ip": "212.102.40.69",
+    "timezone": "America/Chicago",
     "proxy": null,
-    "vpn_server": "us-atl.prod.surfshark.com"
+    "vpn_server": "us-dal.prod.surfshark.com"
   },
-  "be60d196": {
+  "2b201447": {
     "status": "CLOSED",
     "url": "https://m.facebook.com",
-    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\be60d196",
-    "pid": 11912,
-    "ip": "149.40.50.195",
-    "timezone": "America/New_York",
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\2b201447",
+    "pid": 8124,
+    "ip": "103.103.98.20",
+    "timezone": "America/Chicago",
     "proxy": null,
-    "vpn_server": "us-bos.prod.surfshark.com"
+    "vpn_server": "us-chi.prod.surfshark.com"
   }
 }

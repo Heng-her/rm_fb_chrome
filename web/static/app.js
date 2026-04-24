@@ -92,23 +92,54 @@ function loadStatus() {
         } else {
           actionButton = `
                         <button onclick="openChrome('${id}')">Open</button>
-                        <button onclick="deleteProfile('${id}')" style="color: red;">Delete</button>
+                        <button onclick="deleteProfile('${id}')" style="background: #e53e3e;">Delete</button>
                     `;
         }
 
+        const statusClass =
+          s.status === "OPEN" ? "status-pill status-open" : "status-pill";
+
         tbody.innerHTML += `
                     <tr>
-                        <td>${id}</td>
-                        <td>${s.status}</td>
-                        <td>${s.vpn_server || "None"}</td>
-                        <td>${s.ip || "Unknown"}</td>
-                        <td>${s.timezone || "Unknown"}</td>
-                        <td>${s.url}</td>
+                        <td style="font-family: monospace; font-weight: 600;">${id}</td>
+                        <td><span class="${statusClass}">${s.status}</span></td>
+                        <td style="color: #4a5568; font-size: 14px;">${s.ip || "..."}</td>
+                        <td>${s.timezone || "..."}</td>
                         <td>${actionButton}</td>
-                    </tr>
-                `;
+                        </tr>
+                        `;
       }
     });
+}
+
+function showModal(type) {
+  const overlay = document.getElementById("modalOverlay");
+  const loginCard = document.getElementById("loginCard");
+  const configCard = document.getElementById("configCard");
+
+  loginCard.classList.remove("active");
+  configCard.classList.remove("active");
+
+  if (type === "login") {
+    loginCard.classList.add("active");
+  } else {
+    configCard.classList.add("active");
+  }
+
+  overlay.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  const overlay = document.getElementById("modalOverlay");
+  overlay.classList.remove("active");
+  document.body.style.overflow = "auto";
+}
+
+function handleOverlayClick(e) {
+  if (e.target.id === "modalOverlay") {
+    closeModal();
+  }
 }
 
 function loadCredentials() {

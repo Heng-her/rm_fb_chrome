@@ -5,182 +5,326 @@
     <script src="/static/app.js"></script>
     <style>
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        margin: 20px;
-        background-color: #f4f7f6;
-        color: #333;
+        font-family: "Outfit", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #f0f4f8 0%, #d7e3ec 100%);
+        color: #1a202c;
+        min-height: 100vh;
+      }
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        padding: 12px 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(31, 38, 135, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.18);
       }
       h2 {
-        color: #2c3e50;
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: #2d3748;
       }
-      .flex-container {
+      .nav-buttons {
         display: flex;
-        gap: 20px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
+        gap: 12px;
       }
-      .card {
-        border: 1px solid #e1e8ed;
-        padding: 20px;
-        border-radius: 8px;
+      .btn-nav {
+        padding: 10px 24px;
+        font-size: 15px;
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+      .btn-nav:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      }
+      .btn-login {
+        background: #4a5568;
+      }
+      .btn-config {
+        background: #3182ce;
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+      }
+      .modal-content {
         background: #ffffff;
-        min-width: 350px;
-        flex: 1;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        padding: 40px;
+        border-radius: 24px;
+        width: 100%;
+        max-width: 500px;
+        position: relative;
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        transform: scale(0.95);
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .modal-overlay.active .modal-content {
+        transform: scale(1);
+      }
+      .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #f7fafc;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #718096;
+        font-size: 20px;
+        transition: all 0.2s;
+      }
+      .modal-close:hover {
+        background: #edf2f7;
+        color: #2d3748;
+      }
+
+      .card {
+        border: none;
+        padding: 0;
+        background: transparent;
+        display: none;
+      }
+      .card.active {
+        display: block;
       }
       .card h3 {
         margin-top: 0;
-        color: #34495e;
-        border-bottom: 2px solid #ecf0f1;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 24px;
       }
       .form-group {
-        margin-bottom: 15px;
-        display: flex;
-        flex-direction: column;
+        margin-bottom: 20px;
       }
       .form-group label {
-        margin-bottom: 5px;
-        font-weight: bold;
-        font-size: 14px;
-        color: #555;
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        color: #4a5568;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
       .form-group input,
       .form-group select {
-        padding: 10px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        font-size: 14px;
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #edf2f7;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.2s;
+        box-sizing: border-box;
       }
       .form-group input:focus,
       .form-group select:focus {
         outline: none;
-        border-color: #3498db;
-        box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        border-color: #3182ce;
+        background: #fff;
       }
       .btn-group {
         display: flex;
-        gap: 10px;
-        align-items: center;
-        margin-top: 10px;
+        gap: 12px;
+        margin-top: 24px;
       }
       button {
-        padding: 10px 15px;
+        padding: 12px 24px;
         cursor: pointer;
         border: none;
-        background: #3498db;
+        background: #3182ce;
         color: white;
-        border-radius: 4px;
-        font-weight: bold;
-        transition: background 0.2s;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.2s;
       }
       button:hover {
-        background: #2980b9;
+        background: #2b6cb0;
       }
       .btn-success {
-        background: #2ecc71;
+        background: #48bb78;
       }
       .btn-success:hover {
-        background: #27ae60;
+        background: #38a169;
       }
+
       table {
         width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        background: #ffffff;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        border-radius: 8px;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
         overflow: hidden;
-      }
-      th,
-      td {
-        border-bottom: 1px solid #ecf0f1;
-        padding: 12px 15px;
-        text-align: left;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
       }
       th {
-        background-color: #34495e;
-        color: #ffffff;
-        font-weight: bold;
+        background: #f7fafc;
+        color: #4a5568;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        padding: 10px 16px;
+        text-align: left;
+      }
+      td {
+        padding: 8px 16px;
+        border-bottom: 1px solid #edf2f7;
+        color: #2d3748;
+        font-size: 14px;
       }
       tr:last-child td {
         border-bottom: none;
       }
-      tr:hover {
-        background-color: #f9fbfc;
+      tr:hover td {
+        background: rgba(247, 250, 252, 0.5);
       }
-      /* Action buttons in table */
+
+      /* Compact buttons in table */
       td button {
-        padding: 6px 10px;
+        padding: 6px 12px;
         font-size: 12px;
-        margin-right: 5px;
+        border-radius: 8px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #ebf8ff;
+        color: #2b6cb0;
+      }
+      .status-open {
+        background: #f0fff4;
+        color: #38a169;
       }
     </style>
   </head>
   <body>
-    <h2>Chrome Sessions Dashboard</h2>
-
-    <div class="flex-container">
-      <!-- Surfshark VPN Credentials -->
-      <div class="card">
-        <h3>Surfshark Account Login</h3>
-        <div class="form-group">
-          <label>Account Email:</label>
-          <input
-            type="text"
-            id="surf_username"
-            placeholder="Enter Surfshark Email"
-          />
-        </div>
-        <div class="form-group">
-          <label>Account Password:</label>
-          <input
-            type="password"
-            id="surf_password"
-            placeholder="Enter Surfshark Password"
-          />
-        </div>
-        <div class="btn-group">
-          <button onclick="saveCredentials()">Save Credentials</button>
-          <span
-            id="cred_status"
-            style="color: #27ae60; display: none; font-weight: bold"
-            >✔ Saved Successfully!</span
-          >
-        </div>
+    <div class="header-container">
+      <h2>Chrome Tool</h2>
+      <div class="nav-buttons">
+        <button class="btn-nav btn-login" onclick="showModal('login')">
+          <span>🔑</span> Surfshark Login
+        </button>
+        <button class="btn-nav btn-config" onclick="showModal('config')">
+          <span>⚙️</span> Launch Config
+        </button>
       </div>
+    </div>
 
-      <!-- Custom Open -->
-      <div class="card">
-        <h3>Launch Configuration</h3>
-        <div class="form-group">
-          <label>Target URL:</label>
-          <input
-            type="text"
-            id="custom_url"
-            placeholder="https://m.facebook.com"
-          />
+    <!-- Modal Overlay -->
+    <div
+      id="modalOverlay"
+      class="modal-overlay"
+      onclick="handleOverlayClick(event)"
+    >
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">×</button>
+
+        <!-- Surfshark VPN Credentials -->
+        <div id="loginCard" class="card">
+          <h3>Surfshark Service Login</h3>
+          <p style="font-size: 12px; color: #718096; margin-bottom: 15px;">
+            Use <b>Manual Setup</b> credentials from Surfshark Dashboard.
+          </p>
+          <div class="form-group">
+            <label>Service Username:</label>
+            <input
+              type="text"
+              id="surf_username"
+              placeholder="Enter Service Username"
+            />
+          </div>
+          <div class="form-group">
+            <label>Service Password:</label>
+            <input
+              type="password"
+              id="surf_password"
+              placeholder="Enter Service Password"
+            />
+          </div>
+          <div class="btn-group">
+            <button onclick="saveCredentials()">Save Credentials</button>
+            <span
+              id="cred_status"
+              style="color: #27ae60; display: none; font-weight: bold"
+              >✔ Saved Successfully!</span
+            >
+          </div>
         </div>
-        <div class="form-group">
-          <label>VPN Location:</label>
-          <select id="vpn_location">
-            <option value="">None (Local IP / Direct Connection)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Custom Proxy (Optional):</label>
-          <input
-            type="text"
-            id="custom_proxy"
-            placeholder="http://username:password@ip:port"
-          />
-        </div>
-        <div class="btn-group">
-          <button onclick="openChrome()">Launch Chrome Session</button>
-          <button onclick="createNewProfile()" class="btn-success">
-            Create Profile Only
-          </button>
+
+        <!-- Custom Open -->
+        <div id="configCard" class="card">
+          <h3>Launch Configuration</h3>
+          <div class="form-group">
+            <label>Target URL:</label>
+            <input
+              type="text"
+              id="custom_url"
+              placeholder="https://m.facebook.com"
+            />
+          </div>
+          <div class="form-group">
+            <label>VPN Location:</label>
+            <select id="vpn_location">
+              <option value="">None (Local IP / Direct Connection)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Custom Proxy (Optional):</label>
+            <input
+              type="text"
+              id="custom_proxy"
+              placeholder="http://username:password@ip:port"
+            />
+          </div>
+          <div class="btn-group">
+            <button onclick="openChrome()">Launch Chrome Session</button>
+            <button onclick="createNewProfile()" class="btn-success">
+              Create Profile Only
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -190,10 +334,9 @@
         <tr>
           <th>Session ID</th>
           <th>Status</th>
-          <th>VPN Server</th>
+          <!-- <th>VPN Server</th> -->
           <th>IP Address</th>
           <th>Timezone</th>
-          <th>Current URL</th>
           <th>Actions</th>
         </tr>
       </thead>
