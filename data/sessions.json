@@ -3,8 +3,8 @@
     "status": "CLOSED",
     "url": "https://m.facebook.com",
     "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\3657f145",
-    "pid": 3020,
-    "ip": "212.102.40.69",
+    "pid": 6120,
+    "ip": "2.56.189.115",
     "timezone": "America/Chicago",
     "proxy": null,
     "vpn_server": "us-dal.prod.surfshark.com"
@@ -13,8 +13,28 @@
     "status": "CLOSED",
     "url": "https://m.facebook.com",
     "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\2b201447",
-    "pid": 8124,
-    "ip": "103.103.98.20",
+    "pid": 18748,
+    "ip": "138.199.42.162",
+    "timezone": "America/Chicago",
+    "proxy": null,
+    "vpn_server": "us-chi.prod.surfshark.com"
+  },
+  "21c13a1a": {
+    "status": "CLOSED",
+    "url": "https://m.facebook.com",
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\21c13a1a",
+    "pid": 8388,
+    "ip": "149.40.56.10",
+    "timezone": "America/Chicago",
+    "proxy": null,
+    "vpn_server": "us-hou.prod.surfshark.com"
+  },
+  "f08d5695": {
+    "status": "CLOSED",
+    "url": "https://m.facebook.com",
+    "profile_dir": "D:\\1code\\DeskTop_py\\RM_FB_chrome\\profiles\\f08d5695",
+    "pid": 19704,
+    "ip": "154.47.25.109",
     "timezone": "America/Chicago",
     "proxy": null,
     "vpn_server": "us-chi.prod.surfshark.com"
